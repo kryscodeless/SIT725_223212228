@@ -1,0 +1,27 @@
+/* Page layout */
+.navbar-size {
+  width: 95%;
+  margin: 0 auto;
+}
+
+.main-body {
+  background-color: #F28487;
+  color: white;
+  min-height: calc(100vh - 64px);
+  padding: 24px 0;
+}
+
+/* Make card content readable in the reveal area */
+.card-reveal {
+  color: black;
+}
+
+.card-reveal .card-title,
+.card-reveal p {
+  color: black;
+}
+
+/* Give the "Add Book" button a bit of breathing room */
+#addBookButton {
+  margin: 12px 0 24px;
+}

@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Books - SIT 725 Prac 3</title>
+
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+	<link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+	<nav>
+		<div class="nav-wrapper navbar-size">
+			<a href="#" class="brand-logo left">My BookShelf</a>
+			<ul id="nav-mobile" class="right hide-on-med-and-down">
+				<li><a href="#!" target="_blank">Books</a></li>
+			</ul>
+		</div>
+	</nav>
+
+	<main class="main-body">
+		<div class="container">
+			<div class="row">
+				<div class="col s12 center-align">
+					<h1 id="heading">Welcome</h1>
+					<p class="flow-text">Cards are generated from the server endpoint.</p>
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col s12 center-align">
+					<a class="waves-effect waves-light btn modal-trigger" id="addBookButton" data-target="modalAddBook">Add Book</a>
+				</div>
+			</div>
+
+			<div class="row" id="card-section"></div>
+		</div>
+	</main>
+
+	<!-- Add Book Modal -->
+	<div id="modalAddBook" class="modal modal-fixed-footer">
+		<div class="row modal-content">
+			<form class="col s12" id="addBookForm">
+				<div class="row">
+					<div class="input-field col s12">
+						<input id="book_title" type="text" class="validate">
+						<label for="book_title">Book Title</label>
+					</div>
+				</div>
+				<div class="row">
+					<div class="input-field col s12">
+						<input id="book_author" type="text" class="validate">
+						<label for="book_author">Author</label>
+					</div>
+				</div>
+				<div class="row">
+					<div class="input-field col s12">
+						<textarea id="book_desciption" class="materialize-textarea"></textarea>
+						<label for="book_desciption">Description</label>
+					</div>
+				</div>
+				<div class="row">
+					<div class="input-field col s12">
+						<input id="book_image" type="text" class="validate" placeholder="images/book1.jpg">
+						<label for="book_image">Image path</label>
+					</div>
+				</div>
+			</form>
+		</div>
+		<div class="modal-footer">
+			<a href="#!" class="modal-close waves-effect waves-light btn-flat">Cancel</a>
+			<a href="#!" class="waves-effect waves-light btn" id="formSubmit">Submit</a>
+		</div>
+	</div>
+
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+	<script src="js/scripts.js"></script>
+</body>
+
+</html>
