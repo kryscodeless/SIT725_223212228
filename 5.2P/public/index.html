@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Books Catalog</title>
+</head>
+
+<body>
+  <h1>Books Catalog</h1>
+  <div id="booksList"></div>
+
+  <script>
+    const out = document.getElementById('booksList');
+
+    async function loadBooks() {
+      const res = await fetch('/api/books');
+      const body = await res.json();
+      body.data.forEach(book => {
+        const p = document.createElement('p');
+        p.textContent = `${book.title} - ${book.author}`;
+        out.appendChild(p);
+      });
+    }
+
+    loadBooks();
+  </script>
+</body>
+
+</html>
