@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Books Catalog</title>
+</head>
+
+<body>
+  <h1>Books Catalog</h1>
+  <div id="booksList">Loading books...</div>
+  <div id="bookDetail" style="display:none">
+    <hr>
+    <div id="detailContent"></div>
+    <button onclick="showList()">Back</button>
+  </div>
+
+  <script>
+    const listDiv = document.getElementById('booksList');
+    const detailDiv = document.getElementById('bookDetail');
+    const detailContent = document.getElementById('detailContent');
+
+    async function loadBooks() {
+      try {
+        const res = await fetch('/api/books');
+        const body = await res.json();
+        const books = Array.isArray(body) ? body : body.data;
+
+        if (!Array.isArray(books)) {
+          throw new Error('Unexpected API response');
+        }
+
+        listDiv.innerHTML = '';
+        books.forEach(book => {
+          const p = document.createElement('p');
+          const priceText = book.priceAud ?? book.price ?? '-';
+          p.textContent = `${book.title} - ${book.author} (${book.year}) | ${book.genre} | AUD $${priceText}`;
+          p.style.cursor = 'pointer';
+          p.onclick = () => loadDetail(book._id);
+          listDiv.appendChild(p);
+        });
+      } catch (err) {
+        listDiv.textContent = 'Could not load books.';
+      }
+    }
+
+    async function loadDetail(id) {
+      const res = await fetch(`/api/books/${id}`);
+      const book = await res.json();
+      const priceText = book.priceAud ?? book.price ?? '-';
+      detailContent.innerHTML = `
+        <h2>${book.title}</h2>
+        <p>Author: ${book.author}</p>
+        <p>Genre: ${book.genre}</p>
+        <p>Year: ${book.year}</p>
+        <p>Summary: ${book.summary}</p>
+        <p>Price: AUD $${priceText}</p>
+      `;
+      listDiv.style.display = 'none';
+      detailDiv.style.display = 'block';
+    }
+
+    function showList() {
+      detailDiv.style.display = 'none';
+      listDiv.style.display = 'block';
+    }
+
+    loadBooks();
+  </script>
+</body>
+
+</html>
