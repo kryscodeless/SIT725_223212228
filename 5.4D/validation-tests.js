@@ -436,6 +436,109 @@ async function run() {
     tags: ["UPDATE_FAIL", "REQUIRED"]
   });
 
+  await test({
+    id: "T21",
+    name: "POST missing required author",
+    method: "POST",
+    path: createPath,
+    expected: 400,
+    body: (() => {
+      const p = makeValidBook(`b${runSuffix}-MA`);
+      delete p.author;
+      return p;
+    })(),
+    tags: ["CREATE_FAIL", "REQUIRED"]
+  });
+
+  await test({
+    id: "T22",
+    name: "POST author exceeds max length",
+    method: "POST",
+    path: createPath,
+    expected: 400,
+    body: (() => {
+      const p = makeValidBook(`b${runSuffix}-AL`);
+      p.author = "x".repeat(101);
+      return p;
+    })(),
+    tags: ["CREATE_FAIL", "LENGTH"]
+  });
+
+  await test({
+    id: "T23",
+    name: "POST genre exceeds max length",
+    method: "POST",
+    path: createPath,
+    expected: 400,
+    body: (() => {
+      const p = makeValidBook(`b${runSuffix}-GL`);
+      p.genre = "x".repeat(51);
+      return p;
+    })(),
+    tags: ["CREATE_FAIL", "LENGTH"]
+  });
+
+  await test({
+    id: "T24",
+    name: "POST summary exceeds max length",
+    method: "POST",
+    path: createPath,
+    expected: 400,
+    body: (() => {
+      const p = makeValidBook(`b${runSuffix}-SL`);
+      p.summary = "x".repeat(1501);
+      return p;
+    })(),
+    tags: ["CREATE_FAIL", "LENGTH"]
+  });
+
+  await test({
+    id: "T25",
+    name: "POST year before minimum allowed",
+    method: "POST",
+    path: createPath,
+    expected: 400,
+    body: (() => {
+      const p = makeValidBook(`b${runSuffix}-YM`);
+      p.year = 1449;
+      return p;
+    })(),
+    tags: ["CREATE_FAIL", "TEMPORAL"]
+  });
+
+  await test({
+    id: "T26",
+    name: "POST price not a valid decimal",
+    method: "POST",
+    path: createPath,
+    expected: 400,
+    body: (() => {
+      const p = makeValidBook(`b${runSuffix}-PD`);
+      p.price = "not-a-price";
+      return p;
+    })(),
+    tags: ["CREATE_FAIL", "TYPE"]
+  });
+
+  await test({
+    id: "T27",
+    name: "POST catalog id too short",
+    method: "POST",
+    path: createPath,
+    expected: 400,
+    body: makeValidBook("ab"),
+    tags: ["CREATE_FAIL", "BOUNDARY"]
+  });
+
+  await test({
+    id: "T28",
+    name: "GET book with invalid Mongo id format",
+    method: "GET",
+    path: `${API_BASE}/not-a-valid-object-id`,
+    expected: 400,
+    tags: ["BOUNDARY"]
+  });
+
   const pass = logSummary();
   logCoverage();
 
