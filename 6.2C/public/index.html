@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Books Catalogue</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 24px;
+      line-height: 1.4;
+    }
+
+    button {
+      background: #0b6c8e;
+      color: #fff;
+      border: none;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    button:hover {
+      background: #09566f;
+    }
+
+    #booksList {
+      margin-top: 16px;
+      max-width: 520px;
+      border: 1px solid #d8d8d8;
+      padding: 12px;
+      min-height: 60px;
+    }
+
+    .book-item {
+      margin: 6px 0;
+      cursor: pointer;
+    }
+
+    .book-item:hover {
+      text-decoration: underline;
+    }
+
+    #bookDetail {
+      margin-top: 18px;
+      max-width: 520px;
+      border: 1px solid #d8d8d8;
+      padding: 12px;
+      display: none;
+    }
+
+    .panel {
+      margin-top: 22px;
+      max-width: 520px;
+      border: 1px solid #d8d8d8;
+      padding: 12px;
+    }
+
+    .panel h3 {
+      margin: 0 0 10px 0;
+      font-size: 1rem;
+    }
+
+    label {
+      display: block;
+      margin-top: 8px;
+      font-size: 14px;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      max-width: 480px;
+      box-sizing: border-box;
+      margin-top: 4px;
+      padding: 6px 8px;
+      font-size: 14px;
+    }
+
+    textarea {
+      min-height: 72px;
+      resize: vertical;
+    }
+
+    .msg {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #333;
+    }
+
+    .err {
+      color: #a40000;
+    }
+
+    .ok {
+      color: #0a5c0a;
+    }
+  </style>
+</head>
+
+<body>
+  <h2>Books Catalogue developed by s223212228</h2>
+  <p>Click the button below to get all books from the server:</p>
+  <button id="getBooksBtn" type="button">Get all books</button>
+
+  <div id="booksList">No data loaded yet.</div>
+
+  <div id="bookDetail">
+    <div id="detailContent"></div>
+  </div>
+
+  <div class="panel">
+    <h3>Create book (POST /api/books)</h3>
+    <label>id (catalog id, 4–32 chars, letters/digits/hyphen)
+      <input id="c_id" autocomplete="off" placeholder="e.g. BK-DEMO-001">
+    </label>
+    <label>title <input id="c_title" autocomplete="off"></label>
+    <label>author <input id="c_author" autocomplete="off"></label>
+    <label>year (integer) <input id="c_year" type="number" autocomplete="off"></label>
+    <label>genre <input id="c_genre" autocomplete="off"></label>
+    <label>summary <textarea id="c_summary"></textarea></label>
+    <label>price (AUD) <input id="c_price" type="number" step="0.01" autocomplete="off"></label>
+    <button id="createBtn" type="button" style="margin-top:12px">Create</button>
+    <div id="createMsg" class="msg" aria-live="polite"></div>
+  </div>
+
+  <div class="panel">
+    <h3>Update book (PUT /api/books/:id)</h3>
+    <p style="margin:0 0 8px 0;font-size:14px">Paste the MongoDB <strong>_id</strong> from a book (shown in detail or API). Do not send <code>id</code> in the body — it is immutable.</p>
+    <label>Mongo _id <input id="u_mongoId" autocomplete="off" placeholder="24-char hex ObjectId"></label>
+    <label>title <input id="u_title" autocomplete="off"></label>
+    <label>author <input id="u_author" autocomplete="off"></label>
+    <label>year (integer) <input id="u_year" type="number" autocomplete="off"></label>
+    <label>genre <input id="u_genre" autocomplete="off"></label>
+    <label>summary <textarea id="u_summary"></textarea></label>
+    <label>price (AUD) <input id="u_price" type="number" step="0.01" autocomplete="off"></label>
+    <button id="updateBtn" type="button" style="margin-top:12px">Update</button>
+    <div id="updateMsg" class="msg" aria-live="polite"></div>
+  </div>
+
+  <script>
+    const getBooksBtn = document.getElementById('getBooksBtn');
+    const listDiv = document.getElementById('booksList');
+    const detailDiv = document.getElementById('bookDetail');
+    const detailContent = document.getElementById('detailContent');
+
+    const createBtn = document.getElementById('createBtn');
+    const createMsg = document.getElementById('createMsg');
+    const updateBtn = document.getElementById('updateBtn');
+    const updateMsg = document.getElementById('updateMsg');
+
+    let currentBooks = [];
+
+    function displayPrice(book) {
+      if (book.price != null) return book.price;
+      if (book.priceAud != null) return book.priceAud;
+      return '';
+    }
+
+    async function loadBooks() {
+      try {
+        const res = await fetch('/api/books');
+        if (!res.ok) throw new Error('Request failed');
+        const books = await res.json();
+        if (!Array.isArray(books)) throw new Error('Unexpected API response');
+
+        currentBooks = books;
+        listDiv.innerHTML = '';
+        detailDiv.style.display = 'none';
+        detailContent.innerHTML = '';
+
+        books.forEach(book => {
+          const item = document.createElement('div');
+          item.className = 'book-item';
+          item.textContent = `${book.title} ${displayPrice(book)} AUD`;
+          item.onclick = () => loadDetail(book._id);
+          listDiv.appendChild(item);
+        });
+      } catch (err) {
+        listDiv.textContent = 'Could not load books.';
+      }
+    }
+
+    async function loadDetail(id) {
+      try {
+        const res = await fetch(`/api/books/${id}`);
+        if (!res.ok) throw new Error('Request failed');
+        const book = await res.json();
+
+        const idLine = book.id
+          ? `<p><strong>Catalog id:</strong> ${book.id}</p>`
+          : '';
+
+        detailContent.innerHTML = `
+          <p><strong>Mongo _id:</strong> ${book._id}</p>
+          ${idLine}
+          <p><strong>Title:</strong> ${book.title}</p>
+          <p><strong>Author:</strong> ${book.author}</p>
+          <p><strong>Year:</strong> ${book.year}</p>
+          <p><strong>Genre:</strong> ${book.genre}</p>
+          <p><strong>Summary:</strong> ${book.summary}</p>
+          <p><strong>Price (AUD):</strong> ${displayPrice(book)}</p>
+        `;
+        detailDiv.style.display = 'block';
+      } catch (err) {
+        detailContent.innerHTML = '<p>Could not load selected book details.</p>';
+        detailDiv.style.display = 'block';
+      }
+    }
+
+    async function createBook() {
+      createMsg.textContent = '';
+      createMsg.className = 'msg';
+      const body = {
+        id: document.getElementById('c_id').value.trim(),
+        title: document.getElementById('c_title').value.trim(),
+        author: document.getElementById('c_author').value.trim(),
+        year: Number(document.getElementById('c_year').value),
+        genre: document.getElementById('c_genre').value.trim(),
+        summary: document.getElementById('c_summary').value.trim(),
+        price: Number(document.getElementById('c_price').value)
+      };
+      try {
+        const res = await fetch('/api/books', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.status === 201) {
+          createMsg.textContent = 'Created: ' + (data.message || JSON.stringify(data));
+          createMsg.classList.add('ok');
+        } else {
+          createMsg.textContent = data.message || `HTTP ${res.status}`;
+          createMsg.classList.add('err');
+        }
+      } catch (e) {
+        createMsg.textContent = 'Network error';
+        createMsg.classList.add('err');
+      }
+    }
+
+    async function updateBook() {
+      updateMsg.textContent = '';
+      updateMsg.className = 'msg';
+      const mongoId = document.getElementById('u_mongoId').value.trim();
+      const body = {
+        title: document.getElementById('u_title').value.trim(),
+        author: document.getElementById('u_author').value.trim(),
+        year: Number(document.getElementById('u_year').value),
+        genre: document.getElementById('u_genre').value.trim(),
+        summary: document.getElementById('u_summary').value.trim(),
+        price: Number(document.getElementById('u_price').value)
+      };
+      try {
+        const res = await fetch(`/api/books/${encodeURIComponent(mongoId)}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.status === 200) {
+          updateMsg.textContent = 'Updated OK.';
+          updateMsg.classList.add('ok');
+        } else {
+          updateMsg.textContent = data.message || `HTTP ${res.status}`;
+          updateMsg.classList.add('err');
+        }
+      } catch (e) {
+        updateMsg.textContent = 'Network error';
+        updateMsg.classList.add('err');
+      }
+    }
+
+    getBooksBtn.addEventListener('click', loadBooks);
+    createBtn.addEventListener('click', createBook);
+    updateBtn.addEventListener('click', updateBook);
+  </script>
+</body>
+
+</html>
