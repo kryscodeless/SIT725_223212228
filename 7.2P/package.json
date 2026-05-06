@@ -1,0 +1,27 @@
+{
+  "name": "5.4d",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "mocha --require test/setup.js 'test/**/*.test.js' --timeout 10000",
+    "test:validation": "node validation-tests.js",
+    "start": "node server.js",
+    "seed": "node seed.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "express": "^5.2.1",
+    "mongoose": "^8.19.1",
+    "socket.io": "^4.8.3"
+  },
+  "devDependencies": {
+    "chai": "^6.2.2",
+    "mocha": "^11.7.5",
+    "socket.io-client": "^4.8.3",
+    "supertest": "^7.2.2"
+  }
+}
